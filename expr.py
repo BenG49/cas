@@ -217,6 +217,14 @@ class Expr:
 		
 		return False
 
+	def __hash__(self) -> int:
+		if self.is_leaf():
+			return hash(self[0])
+		h = self.op.value * 31
+		for c in self:
+			h = h * 31 + hash(c)
+		return h
+
 	def __lt__(self, other) -> bool:
 		if self.op == other.op:
 			if self.op == Op.LEAF:
@@ -297,21 +305,29 @@ class Expr:
 	### STRING REPRESENTATION ###
 
 	def __str__(self) -> str:
-		if self.op == Op.POW:
-			return f'({self[0]})^{self[1]}'
-		elif self.op.is_function():
-			return f'{self.op}({self[0]})'
-		elif self.op == Op.LEAF:
-			return f'{self[0]}'
-		elif self.op == Op.DERIV:
-			return f'{str(self.op)}{self[0]}[{self[1]}]'
-		
-		inner = str(self.op).join(map(str, self))
-		
-		if False: #self.op.is_associative():
-			return inner
+		PREFIX_NOTATION = False
+
+		if PREFIX_NOTATION:
+			if self.op == Op.LEAF:
+				return str(self[0])
+			else:
+				return f'({self.op} {" ".join(map(str, self))})'
 		else:
-			return '(' + inner + ')'
+			if self.op == Op.POW:
+				return f'({self[0]})^{self[1]}'
+			elif self.op.is_function():
+				return f'{self.op}({self[0]})'
+			elif self.op == Op.LEAF:
+				return str(self[0])
+			elif self.op == Op.DERIV:
+				return f'{str(self.op)}{self[0]}[{self[1]}]'
+			
+			inner = str(self.op).join(map(str, self))
+			
+			if False: #self.op.is_associative():
+				return inner
+			else:
+				return '(' + inner + ')'
 
 	def __repr__(self) -> str:
 		return self.__str__()
@@ -333,32 +349,14 @@ class Pattern(Expr):
 	def __eq__(self, other) -> bool:
 		return self.op == other.op and hasattr(other, 'id') and self.id == other.id
 
+	def __hash__(self) -> int:
+		return hash(self.id) * 31
+
 	def __lt__(self, other) -> bool:
 		return False
 
 	def __str__(self) -> str:
 		return f'_{self.id}'
-
-
-### FACTORING HELPER FUNCTION ###
-# 2x -> 2
-# x/4 -> 1/4
-# def get_x_to_n_factor(e: Expr) -> [(Expr, Expr), None]:
-# 	def get_xpow(x: Expr) -> [Expr, None]:
-# 		if x.is_var():
-# 			return Expr.num(1)
-# 		if x.is_var() or (x.op == Op.POW and x[0].is_var() and x[1].is_constexpr()):
-# 			return x[1]
-
-# 	if e.op == Op.DIV and get_xpow(e[0]) and e[1].is_constexpr():
-# 		return Expr(Op.DIV, Expr.num(1), e[1]), get_xpow(e[0])
-# 	if e.op == Op.MUL:
-# 		if get_xpow(e[0]) and e[1].is_constexpr():
-# 			return e[1], get_xpow(e[0])
-# 		elif get_xpow(e[1]) and e[0].is_constexpr():
-# 			return e[0], get_xpow(e[1])
-
-# 	return None
 
 ### DERIVATIVE SIMPLIFICATION ###
 def deriv_simplify(e: Expr):
