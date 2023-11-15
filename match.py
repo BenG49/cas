@@ -24,30 +24,32 @@ class MatchData:
 	def combine(self, other):
 		if isinstance(other, MatchData):
 			for key in set(self.keys()).intersection(set(other.keys())):
-				# resolve differing exprs bound to same pattern
+				# resolve different exprs bound to same pattern
 				if type(self[key]) != type(other[key]) or self[key] != other[key]:
-					self_options = self[key]
-					if type(self[key]) is not tuple:
-						self_options = (self[key])
-					
-					other_options = other[key]
-					if type(other[key]) is not tuple:
-						other_options = (other[key])
+					# collapse different options
+					if type(self[key]) is tuple or type(other[key]) is tuple:
+						self_options = self[key] if type(self[key]) is tuple else (self[key])
+						other_options = other[key] if type(other[key]) is tuple else (other[key])
 
-					common_expr = set(self_options).intersection(set(other_options))
+						common_expr = set(self_options).intersection(set(other_options))
 
-					if len(common_expr) == 0:
-						return None
-					elif len(common_expr) > 1:
-						continue
+						# no common expressions
+						if len(common_expr) == 0:
+							return None
+						# too many common expressions
+						elif len(common_expr) > 1:
+							continue
+						else:
+							common_expr = list(common_expr)[0]
+
+						self.data[key] = common_expr
+						other.data[key] = common_expr
+
+						self.collapse(self_options, [k for k in self_options if k != common_expr][0])
+						other.collapse(other_options, [k for k in other_options if k != common_expr][0])
 					else:
-						common_expr = list(common_expr)[0]
-
-					self.data[key] = common_expr
-					other.data[key] = common_expr
-
-					self.collapse(self_options, [k for k in self_options if k != common_expr][0])
-					other.collapse(other_options, [k for k in other_options if k != common_expr][0])
+						# attempting to combine different exprs that aren't options
+						return None
 			else:
 				self.data = self.data | other.data
 			
@@ -61,12 +63,10 @@ class MatchData:
 			for k in self.keys():
 				if type(self[k]) is tuple:
 					self.data[k] = self[k][0]
-			
-			return self
-		
-		for key, val in self.items():
-			if val == target:
-				self.data[key] = output
+		else:
+			for key, val in self.items():
+				if val == target:
+					self.data[key] = output
 
 		return self
 

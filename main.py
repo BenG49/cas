@@ -100,7 +100,6 @@ def simplify_rule_test():
 	e = parse('2*x^3*x')
 	test(e, parse('2*x^4'))
 
-	# (2*x*y)+(4*3*z*y)+(x*z*1*2)+x = (2*x*y)+(12*y*z)+(2*x*z) = 2x(y+z)+12yz = 2(x(y+z)+6yz)
 	e = parse('(2*x*y)+(4*3*z*y)+(x*z*1*2)+x')
 	test(e, parse('((y*z*12)+(x*z*2)+(x*y*2)+x)'))
 
@@ -109,6 +108,9 @@ def simplify_rule_test():
 
 	e = parse('(x-x)-1')
 	test(e, parse('0-1').simplify())
+
+	e = parse('3+x/x')
+	test(e, parse('4'))
 
 if __name__ == '__main__':
 	simplify_rule_test()
