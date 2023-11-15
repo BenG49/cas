@@ -35,7 +35,7 @@ class RuleSet:
 		prev = None
 		while prev is None or prev != expr:
 			prev = expr
-			expr = RuleSet.apply(expr).simplify_constexprs()
+			expr = RuleSet.apply(expr).simplify()
 
 		return expr
 

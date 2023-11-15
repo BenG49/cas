@@ -105,34 +105,6 @@ class Expr:
 	
 	### EVAL AND SIMPLIFICATION ###
 
-	def simplify_constexprs(self):
-		def eq(*x):
-			return Expr(*x).simplify()
-
-		if self.is_constexpr():
-			try:
-				return Expr.num(self())
-			except ZeroDivisionError:
-				...
-
-		# separate constexprs and exprs
-		elif self.op.is_associative() and len(self) > 2:
-			constexprs = [e for e in self if e.is_constexpr()]
-			exprs = [e for e in self if not e.is_constexpr()]
-
-			if len(constexprs) and len(exprs):
-				return Expr(
-					self.op,
-					eq(self.op, *exprs) if len(exprs) > 1 else exprs[0],
-					eq(self.op, *constexprs) if len(constexprs) > 1 else constexprs[0]
-				)
-		
-		if len(self.get_child_nodes()):
-			return Expr(self.op, *[e.simplify() for e in self])
-		else:
-			return self
-
-
 	def simplify(self):
 		def eq(*x):
 			return Expr(*x).simplify()
@@ -155,37 +127,6 @@ class Expr:
 					eq(self.op, *constexprs) if len(constexprs) > 1 else constexprs[0]
 				)
 
-		# distributive property
-		# elif self.op == Op.PLUS:
-		# 	exprs = [e for e in self if not e.is_constexpr()]
-
-			'''
-        +
-    /   |   \ 
-  *     *      *
- / \   / \   / | \ 
- y 2   x 2   y 3 x
-			'''
-
-			
-		# elif self.op == Op.DERIV:
-		# 	return deriv_simplify(self)
-
-		# factoring (2x^n+3x^n -> 5x^n)
-		# elif self.op.is_additive() and get_x_to_n_factor(self[0]) and get_x_to_n_factor(self[1]):
-		# 	a1, n1 = get_x_to_n_factor(self[0])
-		# 	a2, n2 = get_x_to_n_factor(self[1])
-
-		# 	if n1() == n2():
-		# 		if n1() == 1:
-		# 			return Expr(Op.MUL,
-		# 				eq(Op.PLUS, a1, a2),
-		# 				Expr.x())
-		# 		else:
-		# 			return Expr(Op.MUL,
-		# 				eq(Op.PLUS, a1, a2),
-		# 				Expr(Op.POW, Expr.x(), n1))
-
 		if len(self.get_child_nodes()):
 			return Expr(self.op, *[e.simplify() for e in self])
 		else:
@@ -205,7 +146,7 @@ class Expr:
 	### COMPARISON OPERATORS ###
 
 	def __eq__(self, other) -> bool:
-		if len(self) == len(other) and self.op == other.op:
+		if isinstance(other, Expr) and len(self) == len(other) and self.op == other.op:
 			if all([self[n] == other[n] for n in range(len(self))]):
 				return True
 			
@@ -347,7 +288,7 @@ class Pattern(Expr):
 		return 1
 
 	def __eq__(self, other) -> bool:
-		return self.op == other.op and hasattr(other, 'id') and self.id == other.id
+		return isinstance(other, Pattern) and self.id == other.id
 
 	def __hash__(self) -> int:
 		return hash(self.id) * 31

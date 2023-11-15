@@ -132,7 +132,7 @@ class Rule:
 		prev = None
 		while prev is None or prev != expr:
 			prev = expr
-			expr = self.apply(expr).simplify_constexprs()
+			expr = self.apply(expr).simplify()
 
 		return expr
 	
