@@ -1,87 +1,105 @@
 from expr import Expr, Pattern
 from copy import deepcopy
+from match import MatchData
 
 '''
 Rewrite rules
 '''
 
 class Rule:
-	# returns pattern dict or nothing
-	def get_pattern_matches(rule_tree: [Expr, Pattern], expr_tree: Expr) -> [dict, None]:
-		def patterns_end(tree: Expr) -> list[Expr]:
-			return [c for c in rule_tree if not c.is_pattern()] + [c for c in rule_tree if c.is_pattern()]
-
-		
-		# pattern
-		if isinstance(rule_tree, Pattern):
-			return { rule_tree[0]: expr_tree }
-
-		# no patterns found
-		elif rule_tree == expr_tree:
-			return dict()
-		
-		if expr_tree.is_leaf():
-			return None
-
-		if rule_tree.op == expr_tree.op:
-			if expr_tree.op.is_associative() and len(expr_tree) > len(rule_tree):
-				# prevents matching multiple rule children to one expr child
-				indicies = []
-				out_dict = dict()
-
-				for r in patterns_end(rule_tree):
-					for i in range(len(expr_tree)):
-						if i not in indicies:
-							val = Rule.get_pattern_matches(r, expr_tree[i])
-							if val is not None:
-								out_dict |= val
-								indicies.append(i)
-								break
-					else:
-						# break if match wasn't found
-						break
-				else:
-					# if match was found for every rule child
-					return out_dict
-
-			elif len(rule_tree) == len(expr_tree) and not rule_tree.is_leaf():
-				rule_children = rule_tree.children
-				expr_children = expr_tree.children
-
-				if expr_tree.op.is_associative():
-					rule_children = sorted(rule_tree.children)
-					expr_children = sorted(expr_tree.children)
-
-				out_dict = dict()
-
-				for r, e in zip(rule_children, expr_children):
-					val = Rule.get_pattern_matches(r, e)
-
-					if val is None:
-						break
-
-					out_dict |= val
-				else:
-					return out_dict
-
-		# check children
-		# NOTE: for multiple matches might not work
-		for child in expr_tree:
-			matches = Rule.get_pattern_matches(rule_tree, child)
-			if matches:
-				return matches
-
 	def __init__(self, input: [Pattern, Expr], output: [Pattern, Expr]):
 		self.input = input
 		self.output = output
+	
+	def get_pattern_matches(expr: Expr, match: Expr, match_data: MatchData):
+		# MATCH IS PATTERN
+		if isinstance(match, Pattern):
+			return match_data.register(match, expr)
+		
+		# ROOTS COMPELTELY EQUAL
+		elif match == expr:
+			return match_data
+	
+		# LEAF
+		elif expr.is_leaf():
+			return None
+		
+		# CHECK THROUGH CHILDREN
+		elif match.op != expr.op or len(match) > len(expr):
+			# TODO: finds first match
+			for child in expr:
+				child_match_data = Rule.get_pattern_matches(match, child, MatchData())
+				if child_match_data:
+					return match_data.combine(child_match_data)
+			
+			return None
+		
+		# MATCH ROOTS WITH NON-ASSOCIATIVE OPERATORS
+		elif not match.op.is_associative():
+			if len(match) != len(expr):
+				return None
+
+			local_matches = MatchData()
+			for i in range(len(match)):
+				check = Rule.get_pattern_matches(expr[i], match[i], MatchData())
+
+				if check is None:
+					return None
+
+				if local_matches.combine(check) is None:
+					return None
+
+			return match_data.combine(local_matches)
+
+		# MATCH ROOTS WITH ASSOCIATIVE OPERATORS
+		marked_indicies = []
+
+		def get_matches_children(match_list: list[Expr]) -> [MatchData, None]:
+			local_matches = MatchData()
+			for match_expr in match_list:
+				for i, child in enumerate(expr):
+					if i not in marked_indicies:
+						check = Rule.get_pattern_matches(child, match_expr, MatchData())
+						if check is not None:
+							local_matches.combine(check)
+							marked_indicies.append(i)
+							break
+				else:
+					# if match wasn't found
+					break
+			else:
+				# match was found for every expr
+				return local_matches
+
+		match_exprs = [c for c in match if not c.is_pattern()]
+		match_patterns = [c for c in match if c.is_pattern()]
+
+		local_match = get_matches_children(match_exprs)
+		if local_match is None:
+			return None
+
+		if len(match_patterns) > 1:
+			expr_remaining = [expr[i] for i in range(len(expr)) if i not in marked_indicies]
+
+			if len(match_patterns) != len(expr_remaining):
+				return None
+			
+			for pattern in match_patterns:
+				local_match.register(pattern, tuple(expr_remaining))
+		else:
+			local_match.combine(get_matches_children(match_patterns))
+
+		return match_data.combine(local_match)
 
 	def apply(self, expr: Expr) -> Expr:
 		# get pattern/tree pairs
-		matches = Rule.get_pattern_matches(self.input, expr)
-		
+		matches = Rule.get_pattern_matches(expr, self.input, MatchData())
+
 		# no match
 		if matches is None:
 			return expr
+
+		matches.collapse()
 
 		copy = deepcopy(expr)
 

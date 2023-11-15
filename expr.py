@@ -335,7 +335,7 @@ class Expr:
 class Pattern(Expr):
 	def __init__(self, id):
 		self.op = Op.LEAF
-		self.id = id
+		self.id = id.lstrip('_')
 
 	def is_pattern(self) -> bool:
 		return True
