@@ -107,10 +107,13 @@ def simplify_rule_test():
 	test(e, parse('x*5'))
 
 	e = parse('x-x-1')
-	test(e, parse('0-1').simplify())
+	test(e, parse('-1'))
 
 	e = parse('3+x/x')
 	test(e, parse('4'))
+
+	e = parse('3*x+2*x+1*x')
+	test(e, parse('6*x'))
 
 if __name__ == '__main__':
 	simplify_rule_test()

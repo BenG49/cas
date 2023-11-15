@@ -28,8 +28,8 @@ class MatchData:
 				if type(self[key]) != type(other[key]) or self[key] != other[key]:
 					# collapse different options
 					if type(self[key]) is tuple or type(other[key]) is tuple:
-						self_options = self[key] if type(self[key]) is tuple else (self[key])
-						other_options = other[key] if type(other[key]) is tuple else (other[key])
+						self_options = self[key] if type(self[key]) is tuple else tuple([self[key]])
+						other_options = other[key] if type(other[key]) is tuple else tuple([other[key]])
 
 						common_expr = set(self_options).intersection(set(other_options))
 
@@ -45,8 +45,10 @@ class MatchData:
 						self.data[key] = common_expr
 						other.data[key] = common_expr
 
-						self.collapse(self_options, [k for k in self_options if k != common_expr][0])
-						other.collapse(other_options, [k for k in other_options if k != common_expr][0])
+						if len(self_options) > 1:
+							self.collapse(self_options, [k for k in self_options if k != common_expr][0])
+						if len(other_options) > 1:
+							other.collapse(other_options, [k for k in other_options if k != common_expr][0])
 					else:
 						# attempting to combine different exprs that aren't options
 						return None

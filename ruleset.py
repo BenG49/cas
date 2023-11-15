@@ -21,7 +21,8 @@ class RuleSet:
 		parse('_x^0 -> 1'),
 
 		# distributive property
-		parse('(_x*_n)+(_x*_m)->_x*(_n+_m)')
+		parse('(_x*_n)+(_x*_m) -> _x*(_n+_m)'),
+		parse('(_x*_n)+_x      -> _x*(_n+1)')
 	]
 
 	def apply(expr: Expr) -> Expr:
