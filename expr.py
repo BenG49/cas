@@ -305,7 +305,7 @@ class Expr:
 	### STRING REPRESENTATION ###
 
 	def __str__(self) -> str:
-		PREFIX_NOTATION = False
+		PREFIX_NOTATION = True
 
 		if PREFIX_NOTATION:
 			if self.op == Op.LEAF:

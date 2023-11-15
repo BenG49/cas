@@ -40,12 +40,6 @@ def parse(s: str) -> Expr:
 		
 		return out
 	
-	def parse_op():
-		if idx() in Op.binop_strings():
-			return Op(Op.strings().index(eat(1)))
-		else:
-			error(f'Unsupported operator \'{idx()}\'')
-	
 	def parse_term() -> Expr:
 		if idx() == '(':
 			eat(1)
@@ -73,8 +67,8 @@ def parse(s: str) -> Expr:
 		elif idx().isalpha():
 			return Expr(Op.LEAF, eat(1))
 		# number
-		elif idx().isdigit():
-			i = 0
+		elif idx().isdigit() or idx() == '-':
+			i = 1
 			while idx(i).isdigit():
 				i += 1
 			return Expr.num(int(eat(i)))
@@ -94,33 +88,24 @@ def parse(s: str) -> Expr:
 			return Expr(Op.POW, *children)
 
 	def parse_product() -> Expr:
-		children = [parse_factor()]
-		op = None
+		expr = parse_factor()
 
-		while (op is None and idx() in ['*', '/']) or (op is not None and idx() == op):
+		while idx() in ['*', '/']:
 			op = eat(1)
-			children.append(parse_factor())
-
-		if op is None:
-			return children[0]
-		else:
-			return Expr(Op(Op.strings().index(op)), *children)
-
+			expr = Expr(Op(Op.strings().index(op)), expr, parse_factor())
+		
+		return expr
 
 	def parse_statement() -> Expr:
-		children = [parse_product()]
-		op = None
+		expr = parse_product()
 
-		while (op is None and idx() in ['+', '-']) or (op is not None and idx() == op):
+		while idx() in ['+', '-']:
 			op = eat(1)
-			children.append(parse_product())
-
-		if op is None:
-			return children[0]
-		else:
-			return Expr(Op(Op.strings().index(op)), *children)
+			expr = Expr(Op(Op.strings().index(op)), expr, parse_product())
+		
+		return expr
 
 	return parse_statement()
 
 if __name__ == '__main__':
-	print(parse('sin(10*2)+3'))
+	print(parse('1*1/-1'))
