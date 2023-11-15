@@ -106,7 +106,7 @@ def simplify_rule_test():
 	e = parse('(x*3)+(x*2)')
 	test(e, parse('x*5'))
 
-	e = parse('(x-x)-1')
+	e = parse('x-x-1')
 	test(e, parse('0-1').simplify())
 
 	e = parse('3+x/x')

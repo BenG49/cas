@@ -76,16 +76,13 @@ def parse(s: str) -> Expr:
 		error(f'Expected term or function, found \'{idx()}\'')
 
 	def parse_factor() -> Expr:
-		children = [parse_term()]
+		expr = parse_term()
 
-		while idx() == '^':
+		if idx() == '^':
 			eat(1)
-			children.append(parse_factor())
-
-		if len(children) == 1:
-			return children[0]
-		else:
-			return Expr(Op.POW, *children)
+			return Expr(Op.POW, expr, parse_factor())
+		
+		return expr
 
 	def parse_product() -> Expr:
 		expr = parse_factor()
