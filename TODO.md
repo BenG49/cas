@@ -4,3 +4,4 @@ Fix get_pattern_matches: superpositions
   - look through possibilities and choose one that exists in current options
   - collapse all options in dictionary, including mutually exclusive options
     - how do i know if its definitely mutually exclusive? might just be coincidentally same options -- edge case though
+Fix parse('1-1+1'), parse('-1')

@@ -87,26 +87,28 @@ def rule_test():
 	print(e, '->', RuleSet.repeat_apply(e))
 
 def simplify_rule_test():
+	def test(e, expected):
+		a = RuleSet.repeat_apply(e)
+		print(e, '->', a, a == expected)
+	
 	e = parse('x^2*2+x^2/2')
-
-	print(e, '->', RuleSet.repeat_apply(e), RuleSet.repeat_apply(e) == parse('x^2*2+x^2/2'))
+	test(e, parse('x^2*2+x^2/2'))
 
 	e = parse('x^2/x')
-
-	print(e, '->', RuleSet.repeat_apply(e), RuleSet.repeat_apply(e) == parse('x'))
+	test(e, parse('x'))
 
 	e = parse('2*x^3*x')
-
-	print(e, '->', RuleSet.repeat_apply(e), RuleSet.repeat_apply(e) == parse('2*x^4'))
+	test(e, parse('2*x^4'))
 
 	# (2*x*y)+(4*3*z*y)+(x*z*1*2)+x = (2*x*y)+(12*y*z)+(2*x*z) = 2x(y+z)+12yz = 2(x(y+z)+6yz)
 	e = parse('(2*x*y)+(4*3*z*y)+(x*z*1*2)+x')
-
-	print(e, '->', RuleSet.repeat_apply(e), RuleSet.repeat_apply(e) == parse('((y*z*12)+(x*z*2)+(x*y*2)+x)'))
+	test(e, parse('((y*z*12)+(x*z*2)+(x*y*2)+x)'))
 
 	e = parse('(x*3)+(x*2)')
+	test(e, parse('x*5'))
 
-	print(e, '->', RuleSet.repeat_apply(e), RuleSet.repeat_apply(e) == parse('x*5'))
+	e = parse('(x-x)-1')
+	test(e, parse('0-1').simplify())
 
 if __name__ == '__main__':
 	simplify_rule_test()

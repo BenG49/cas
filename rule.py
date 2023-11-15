@@ -28,7 +28,7 @@ class Rule:
 		elif match.op != expr.op or len(match) > len(expr):
 			# TODO: finds first match
 			for child in expr:
-				child_match_data = Rule.get_pattern_matches(match, child, MatchData())
+				child_match_data = Rule.get_pattern_matches(child, match, MatchData())
 				if child_match_data:
 					return match_data.combine(child_match_data)
 			
@@ -44,12 +44,20 @@ class Rule:
 				check = Rule.get_pattern_matches(expr[i], match[i], MatchData())
 
 				if check is None:
-					return None
+					break
 
 				if local_matches.combine(check) is None:
-					return None
-
-			return match_data.combine(local_matches)
+					break
+			else:
+				return match_data.combine(local_matches)
+			
+			# CHECK THROUGH CHILDREN
+			for child in expr:
+				child_match_data = Rule.get_pattern_matches(child, match, MatchData())
+				if child_match_data:
+					return match_data.combine(child_match_data)
+			
+			return None
 
 		# MATCH ROOTS WITH ASSOCIATIVE OPERATORS
 		marked_indicies = []

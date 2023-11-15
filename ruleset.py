@@ -3,6 +3,8 @@ from parse import parse
 
 class RuleSet:
 	Rules = [
+		parse('_x-_x -> 0'),
+		
 		parse('_x+0 -> _x'),
 		parse('_x*0 -> 0'),
 		parse('_x*1 -> _x'),
