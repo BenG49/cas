@@ -61,14 +61,11 @@ class MatchData:
 		return self
 	
 	def collapse(self, target: tuple = None, output: Expr = None):
-		if target is None or output is None:
-			for k in self.keys():
-				if type(self[k]) is tuple:
-					self.data[k] = self[k][0]
-		else:
-			for key, val in self.items():
-				if val == target:
-					self.data[key] = output
+		for pattern, expr in self.items():
+			if expr == target:
+				self.data[pattern] = output
+			elif type(expr) is tuple:
+				self.data[pattern] = expr[0]
 
 		return self
 
