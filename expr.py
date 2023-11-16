@@ -307,17 +307,22 @@ def deriv_simplify(e: Expr):
 	ind = e[0]
 	equ = e[1]
 
+	# $c -> 0
 	if equ.is_constexpr():
 		return Expr.num(0)
+	# x -> 1
+	# $v -> d/dx _v
 	elif equ.is_var():
 		if equ == ind:
 			return Expr.num(1)
 		else:
 			return e
+	# _a+_b -> d/dx _a + d/dx _b
 	elif equ.op.is_additive():
 		return eq(
 			equ.op,
 			*[eq(Op.DERIV, ind, e) for e in equ])
+	# _a*_b*... -> d/dx _a * _b * ... + d/dx _b * _a * ... + ...
 	elif equ.op == Op.MUL:
 		return eq(
 			Op.PLUS,
@@ -326,6 +331,7 @@ def deriv_simplify(e: Expr):
 				eq(Op.DERIV, ind, e),
 				*[f for j, f in enumerate(equ) if j != i]
 			) for i, e in enumerate(equ)])
+	# _a/_b -> (_b * d/dx _a - _a * d/dx _b) / _b ^ 2
 	elif equ.op == Op.DIV:
 		return eq(Op.DIV,
 			eq(
@@ -333,18 +339,10 @@ def deriv_simplify(e: Expr):
 				eq(Op.MUL, equ[1], eq(Op.DERIV, ind, equ[0])),
 				eq(Op.MUL, equ[0], eq(Op.DERIV, ind, equ[1]))),
 			eq(Op.POW, equ[1], Expr.num(2)))
-	elif equ.op == Op.POW:
-		return eq(
-			Op.MUL,
-			equ[1],
-			eq(
-				Op.POW,
-				equ[0],
-				eq(Op.MINUS, equ[1], Expr.num(1))),
-			eq(Op.DERIV, ind, equ[0]))
 	elif equ.op.is_function():
 		inside = equ[0]
 
+		# _a^_n -> d/dx _a*_n*_a^(_n-1)
 		if equ.op == Op.POW:
 			left = eq(
 				Op.MUL,
@@ -353,8 +351,10 @@ def deriv_simplify(e: Expr):
 					Op.POW,
 					inside,
 					eq(Op.MINUS, equ[1], Expr.num(1))))
+		# sin(_x) -> cos(_x) * d/dx _x
 		elif equ.op == Op.SIN:
 			left = eq(Op.COS, equ[0])
+		# cos(_x) -> -1 * sin(_x) * d/dx _x
 		elif equ.op == Op.COS:
 			left = eq(Op.MUL, Expr.num(-1), eq(Op.SIN, equ[0]))
 
