@@ -5,13 +5,10 @@ class MatchData:
 		self.data = dict()
 
 	def __getitem__(self, key: [Pattern, str]) -> Expr:
-		if isinstance(key, Pattern):
-			return self.data[str(key)]
-		else:
-			return self.data[key]
+		return self.data[str(key) if isinstance(key, Pattern) else key]
 
 	def register(self, pattern: Pattern, expr: [Expr, tuple[Expr]]):
-		if str(pattern) in self.data:# and self[pattern] != expr:
+		if str(pattern) in self.data:
 			print('EXISTS')
 			return
 		
@@ -74,6 +71,9 @@ class MatchData:
 
 	def keys(self):
 		return self.data.keys()
+
+	def values(self):
+		return self.data.values()
 
 	def __len__(self) -> int:
 		return len(self.data)
