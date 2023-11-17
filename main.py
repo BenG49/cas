@@ -3,9 +3,6 @@ from ruleset import RuleSet
 from op import Op
 from parse import parse
 
-def num(n): return Expr.num(n)
-def x(): return Expr.x()
-
 def equality_test():
 	a = parse('x+2')
 	b = parse('2+x')
@@ -24,31 +21,18 @@ def canonicalization_test():
 
 def deriv_test():
 	e = Expr(Op.DERIV,
-		x(),
+		parse('x'),
 		parse('x*x'))
 
 	e = Expr(Op.DERIV,
-		x(),
+		parse('x'),
 		parse('(3x)/x^2'))
 
 	e = Expr(Op.DERIV,
-		x(),
+		parse('x'),
 		parse('3*x^2+x'))
 
 	print(e, '=', e.simplify())
-
-def factor_test():
-	e = num(4)
-
-	print(e.has_factor(num(2)))
-
-	e = parse('x*3*10*y')
-
-	print(e.has_factor(num(5)))
-
-	e = parse('x^2/2')
-
-	print(e.has_factor(x()))
 
 def simplify_test():
 	e = parse('2*x^2+x^2/2')
@@ -114,6 +98,8 @@ def simplify_rule_test():
 
 	e = parse('3*x+2*x+1*x')
 	test(e, parse('6*x'))
+	print(e.is_constexpr())
 
 if __name__ == '__main__':
-	simplify_rule_test()
+	# simplify_rule_test()
+	print(parse('1/0').simplify())

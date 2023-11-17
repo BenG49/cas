@@ -15,9 +15,6 @@ class Op(Enum):
 	def is_additive(self) -> bool:
 		return self in [Op.PLUS, Op.MINUS]
 
-	def is_multiplicitive(self) -> bool:
-		return self in [Op.MUL, Op.DIV]
-
 	def is_function(self) -> bool:
 		return self in [Op.POW, Op.SIN, Op.COS]
 	
@@ -26,9 +23,6 @@ class Op(Enum):
 	def is_associative(self) -> bool:
 		return self in [Op.PLUS, Op.MUL]
 
-	def is_commutative(self) -> bool:
-		return self in [Op.PLUS, Op.MUL]
-	
 	### EVAULUATION ###
 
 	def func(self):
@@ -59,9 +53,6 @@ class Op(Enum):
 	def strings() -> list[str]:
 		return ['', '+', '-', '*', '/', '^', 'sin', 'cos', 'd/d']
 
-	def binop_strings() -> list[str]:
-		return Op.strings()[Op.PLUS.value : Op.POW.value + 1]
-	
 	def func_strings() -> list[str]:
 		return Op.strings()[Op.SIN.value : Op.COS.value + 1]
 

@@ -156,5 +156,5 @@ from op import Op
 
 if __name__ == '__main__':
 	rule = Rule(Expr(Op.PLUS, Pattern.Const('n'), Pattern('x'), Pattern.Const('m')), Pattern('x'))
-	expr = Expr(Op.PLUS, Expr.num(1), Expr.x(), Expr.num(2))
+	expr = Expr(Op.PLUS, Expr.num(1), Expr(Op.LEAF, 'x'), Expr.num(2))
 	print(rule, expr, rule.apply(expr))

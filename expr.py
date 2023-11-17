@@ -2,9 +2,6 @@ from enum import Enum
 from op import Op
 
 class Expr:
-	def x():
-		return Expr(Op.LEAF, 'x')
-	
 	def num(n):
 		return Expr(Op.LEAF, n)
 
@@ -62,10 +59,8 @@ class Expr:
 			return False
 		elif self.is_const():
 			return True
-		elif self.op.is_function():
-			return self[0].is_constexpr()
 		else:
-			return self[0].is_constexpr() and self[1].is_constexpr()
+			return all(c.is_constexpr() for c in self.get_child_nodes())
 
 	# return "real" child nodes
 	def get_child_nodes(self) -> bool:
@@ -76,47 +71,17 @@ class Expr:
 		# leaf
 		else:
 			return []
-
-	### EXPONENT ###
-
-	def exponent(self):
-		return self[1] if self.op == Op.POW else Expr.num(1)
-
-	def base(self):
-		return self[0] if self.op == Op.POW else self
-
-	### FACTORS ###
-
-	def has_factor(self, eq) -> bool:
-		if self == eq:
-			return True
-
-		if self.is_const() and eq.is_const():
-			return self[0] % eq[0] == 0
-		elif self.op == Op.DIV and self[0].has_factor(eq):
-			return True
-		elif self.op == Op.POW and self[0].has_factor(eq):
-			return True
-		elif self.op == Op.MUL:
-			for e in self:
-				if e.has_factor(eq):
-					return True
-
-		return False
 	
 	### EVAL AND SIMPLIFICATION ###
 
 	def simplify(self):
-		def eq(*x):
-			return Expr(*x).simplify()
-
 		# evauluate constant expression
 		if self.is_constexpr():
 			try:
 				return Expr.num(self())
 			except ZeroDivisionError:
-				...
-		# separate constexprs and exprs
+				return self
+		# simplify constexprs and exprs separately
 		elif self.op.is_associative() and len(self) > 2:
 			constexprs = [e for e in self if e.is_constexpr()]
 			exprs = [e for e in self if not e.is_constexpr()]
@@ -124,12 +89,11 @@ class Expr:
 			if len(constexprs) and len(exprs):
 				return Expr(
 					self.op,
-					eq(self.op, *exprs) if len(exprs) > 1 else exprs[0],
-					eq(self.op, *constexprs) if len(constexprs) > 1 else constexprs[0]
-				)
+					Expr(self.op, *exprs).simplify() if len(exprs) > 1 else exprs[0],
+					Expr(self.op, *constexprs).simplify() if len(constexprs) > 1 else constexprs[0])
 
-		if len(self.get_child_nodes()):
-			return Expr(self.op, *[e.simplify() for e in self])
+		if not self.is_leaf():
+			return Expr(self.op, *(e.simplify() for e in self))
 		else:
 			return self
 
@@ -148,14 +112,13 @@ class Expr:
 
 	def __eq__(self, other) -> bool:
 		if isinstance(other, Expr) and len(self) == len(other) and self.op == other.op:
-			if all([self[n] == other[n] for n in range(len(self))]):
-				return True
-			
 			if self.op.is_associative():
 				sort_self = sorted(self.children)
 				sort_other = sorted(other.children)
-				if all([sort_self[n] == sort_other[n] for n in range(len(self))]):
-					return True
+				return all([sort_self[n] == sort_other[n] for n in range(len(self))])
+
+			if all([self[n] == other[n] for n in range(len(self))]):
+				return True
 		
 		return False
 
@@ -193,7 +156,7 @@ class Expr:
 
 	### TREE MODIFICATION ###
 
-	# in-place modification, but have to read return value of function due to edge case
+	# in-place modification, also returns new tree in case of root modification
 	def replace(self, match, replacement):
 		if self == match:
 			return replacement
@@ -230,7 +193,8 @@ class Expr:
 
 	# split associative tree (>2 children) into multi-level tree
 	def split_tree(self, grandchild_indicies: list[int]):
-		if not self.op.is_associative():
+		# prevent creating single child trees
+		if not self.op.is_associative() or len(self) < 3:
 			return
 		
 		grandchild_indicies.sort()
@@ -266,10 +230,7 @@ class Expr:
 			
 			inner = str(self.op).join(map(str, self))
 			
-			if False: #self.op.is_associative():
-				return inner
-			else:
-				return '(' + inner + ')'
+			return '(' + inner + ')'
 
 	def __repr__(self) -> str:
 		return self.__str__()
