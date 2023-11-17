@@ -13,7 +13,7 @@ class Rule:
 	
 	def get_pattern_matches(expr: Expr, match: Expr, match_data: MatchData):
 		# MATCH IS PATTERN
-		if isinstance(match, Pattern):
+		if isinstance(match, Pattern) and match.matches(expr):
 			return match_data.register(match, expr)
 		
 		# ROOTS COMPELTELY EQUAL
@@ -87,13 +87,26 @@ class Rule:
 			return None
 
 		if len(match_patterns) > 1:
+			# first check if any patterns have only one possibility due to match restrictions
+			for pattern in match_patterns:
+				pattern_possible = [expr[i] for i in range(len(expr)) if not i in marked_indicies and pattern.matches(expr[i])]
+				if len(pattern_possible) == 1:
+					e = pattern_possible[0]
+					match_data.register(pattern, e)
+					marked_indicies.append(expr.children.index(e))
+
+					match_patterns.remove(pattern)
+
 			expr_remaining = [expr[i] for i in range(len(expr)) if i not in marked_indicies]
 
 			if len(match_patterns) != len(expr_remaining):
 				return None
 			
 			for pattern in match_patterns:
-				local_match.register(pattern, tuple(expr_remaining))
+				remaining = [expr[i] for i in range(len(expr)) if not i in marked_indicies and pattern.matches(expr[i])]
+				local_match.register(pattern, tuple(remaining))
+
+			local_match.collapse()
 		else:
 			local_match.combine(get_matches_children(match_patterns))
 
@@ -138,3 +151,10 @@ class Rule:
 	
 	def __str__(self) -> str:
 		return f'{self.input} -> {self.output}'
+
+from op import Op
+
+if __name__ == '__main__':
+	rule = Rule(Expr(Op.PLUS, Pattern.Const('n'), Pattern('x'), Pattern.Const('m')), Pattern('x'))
+	expr = Expr(Op.PLUS, Expr.num(1), Expr.x(), Expr.num(2))
+	print(rule, expr, rule.apply(expr))

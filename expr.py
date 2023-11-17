@@ -1,3 +1,4 @@
+from enum import Enum
 from op import Op
 
 class Expr:
@@ -273,13 +274,37 @@ class Expr:
 	def __repr__(self) -> str:
 		return self.__str__()
 
+class MatchType(Enum):
+	ANY = 0
+	CONST = 1
+	SAME_VAR = 2
+
 class Pattern(Expr):
-	def __init__(self, id):
+	def Const(id):
+		return Pattern(id, MatchType.CONST)
+	
+	def SameVar(id):
+		return Pattern(id, MatchType.SAME_VAR)
+
+	def __init__(self, id, match_type: MatchType = MatchType.ANY):
 		self.op = Op.LEAF
 		self.id = id.lstrip('_')
+		self.match_type = match_type
 
 	def is_pattern(self) -> bool:
 		return True
+
+	def matches(self, other: Expr) -> bool:
+		if self.match_type == MatchType.ANY:
+			return True
+		
+		elif self.match_type == MatchType.CONST:
+			return other.is_constexpr()
+		
+		elif self.match_type == MatchType.SAME_VAR:
+			return other.is_var() and other[0] == self.id
+		
+		return False
 	
 	def __getitem__(self, i):
 		return self.id if i == 0 else None
