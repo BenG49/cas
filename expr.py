@@ -294,7 +294,7 @@ class Pattern(Expr):
 		return hash(self.id) * 31
 
 	def __lt__(self, other) -> bool:
-		return False
+		return isinstance(other, Pattern) and self.id < other.id
 
 	def __str__(self) -> str:
 		return f'_{self.id}'
