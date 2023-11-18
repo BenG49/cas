@@ -17,61 +17,91 @@ def parse(s: str) -> Expr:
 	s = s.replace(' ', '').lower()
 
 	# rule
-	if '->' in s:
-		s = s.split('->')
+	if '=>' in s:
+		s = s.split('=>')
 		return Rule(parse(s[0]), parse(s[1]))
 	
-	def error(e: str):
-		print('Error:', e, 'at position', pos)
-		exit(-1)
+	def error(e: str, check: bool = False):
+		if not check:
+			print('Error:', e, 'at index', pos)
+			exit(-1)
 
-	def idx(i: int=0) -> str:
+	def idx(i: int=0, count: int=1) -> str:
 		try:
-			return s[i]
+			return s[i:i+count]
 		except IndexError:
 			return ''
 
-	def eat(n: int):
+	def eat_n(n: int):
 		nonlocal s, pos
-		
+
 		out = s[:n]
 		s = s[n:]
 		pos += n
 		
 		return out
+
+	def eat(expected: str):
+		nonlocal s, pos
+
+		n = len(expected)
+		
+		out = s[:n]
+		s = s[n:]
+
+		if expected is not None:
+			error(f'Expected \'{expected}\', found \'{out}\'', out == expected)
+
+		pos += n
+		
+		return out
 	
+	def parse_var() -> Expr:
+		error(f'Expected variable, found \'{idx()}\'', idx().isalpha())
+		return Expr(Op.LEAF, eat_n(1))
+
+	def parse_num() -> Expr:
+		error(f'Expected digit or \'-\', found \'{idx()}\'', idx().isdigit() or idx() == '-')
+		i = 1
+		while idx(i).isdigit():
+			i += 1
+		return Expr.num(int(eat_n(i)))
+
 	def parse_term() -> Expr:
 		if idx() == '(':
-			eat(1)
+			eat_n(1)
 			out = parse_statement()
-			eat(1)
+			eat(')')
 			return out
 
 		# parse function
 		for o in Op.func_strings():
 			if s.startswith(o):
-				op = Op(Op.strings().index(eat(len(o))))
-
-				eat(1) # (
-				
+				op = Op(Op.strings().index(eat_n(len(o))))
+				eat('(')
 				inside = parse_statement()
-
-				eat(1) # )
-
+				eat(')')
 				return Expr(op, inside)
 		
 		# pattern
 		if idx() == '_':
-			return Pattern(eat(2)[1])
+			eat_n(1)
+			error(f'Expected pattern variable, found \'{idx()}\'', idx().isalpha())
+			return Pattern(eat_n(1))
+		# derivative
+		elif idx(count=3) == 'd/d':
+			eat_n(3)
+			var = parse_var()
+			eat('(')
+			out = Expr(Op.DERIV, var, parse_statement())
+			eat(')')
+			return out
 		# variable
 		elif idx().isalpha():
-			return Expr(Op.LEAF, eat(1))
+			return parse_var()
 		# number
 		elif idx().isdigit() or idx() == '-':
-			i = 1
-			while idx(i).isdigit():
-				i += 1
-			return Expr.num(int(eat(i)))
+			return parse_num()
 
 		error(f'Expected term or function, found \'{idx()}\'')
 
@@ -79,7 +109,7 @@ def parse(s: str) -> Expr:
 		expr = parse_term()
 
 		if idx() == '^':
-			eat(1)
+			eat_n(1)
 			return Expr(Op.POW, expr, parse_factor())
 		
 		return expr
@@ -88,7 +118,7 @@ def parse(s: str) -> Expr:
 		expr = parse_factor()
 
 		while idx() in ['*', '/']:
-			op = eat(1)
+			op = eat_n(1)
 			expr = Expr(Op(Op.strings().index(op)), expr, parse_factor())
 		
 		return expr
@@ -97,7 +127,7 @@ def parse(s: str) -> Expr:
 		expr = parse_product()
 
 		while idx() in ['+', '-']:
-			op = eat(1)
+			op = eat_n(1)
 			expr = Expr(Op(Op.strings().index(op)), expr, parse_product())
 		
 		return expr
@@ -105,4 +135,4 @@ def parse(s: str) -> Expr:
 	return parse_statement()
 
 if __name__ == '__main__':
-	print(parse('1*1/-1'))
+	print(parse('d/dx(1+x)'))

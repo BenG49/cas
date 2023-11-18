@@ -216,6 +216,8 @@ class Expr:
 		if PREFIX_NOTATION:
 			if self.op == Op.LEAF:
 				return str(self[0])
+			elif self.op == Op.DERIV:
+				return f'd/d{self[0]}[{self[1]}]'
 			else:
 				return f'({self.op} {" ".join(map(str, self))})'
 		else:
