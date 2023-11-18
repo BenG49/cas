@@ -9,7 +9,7 @@ class MatchData:
 		return self.data[str(key) if isinstance(key, Pattern) else key]
 
 	def register(self, pattern: Pattern, expr: [Expr, tuple[Expr]]):
-		if str(pattern) in self.data:
+		if str(pattern) in self.data and self[pattern] != expr:
 			print('EXISTS')
 			return
 		

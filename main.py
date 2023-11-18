@@ -3,6 +3,10 @@ from ruleset import RuleSet
 from op import Op
 from parse import parse
 
+def test(e, expected):
+	a = RuleSet.repeat_apply(e)
+	print(a == expected, e, '->', a)
+
 def equality_test():
 	a = parse('x+2')
 	b = parse('2+x')
@@ -71,10 +75,6 @@ def rule_test():
 	print(e, '->', RuleSet.repeat_apply(e))
 
 def simplify_rule_test():
-	def test(e, expected):
-		a = RuleSet.repeat_apply(e)
-		print(e, '->', a, a == expected)
-	
 	e = parse('x^2*2+x^2/2')
 	test(e, parse('x^2*2+x^2/2'))
 
@@ -98,8 +98,12 @@ def simplify_rule_test():
 
 	e = parse('3*x+2*x+1*x')
 	test(e, parse('6*x'))
-	print(e.is_constexpr())
+
+def deriv_rules_test():
+	e = parse('d/dx(x+2)')
+	test(e, parse('1'))
 
 if __name__ == '__main__':
-	# simplify_rule_test()
-	print(parse('1/0').simplify())
+	# deriv_rules_test()
+	rule = RuleSet.Rules[-1]
+	print(rule.apply(parse('d/dx(x+2)')))

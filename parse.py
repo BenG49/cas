@@ -57,8 +57,16 @@ def parse(s: str) -> Expr:
 		return out
 	
 	def parse_var() -> Expr:
+		pattern = idx() == '_'
+		if pattern:
+			eat_n(1)
+		
 		error(f'Expected variable, found \'{idx()}\'', idx().isalpha())
-		return Expr(Op.LEAF, eat_n(1))
+		
+		if pattern:
+			return Pattern(eat_n(1))
+		else:
+			return Expr(Op.LEAF, eat_n(1))
 
 	def parse_num() -> Expr:
 		error(f'Expected digit or \'-\', found \'{idx()}\'', idx().isdigit() or idx() == '-')
@@ -82,14 +90,9 @@ def parse(s: str) -> Expr:
 				inside = parse_statement()
 				eat(')')
 				return Expr(op, inside)
-		
-		# pattern
-		if idx() == '_':
-			eat_n(1)
-			error(f'Expected pattern variable, found \'{idx()}\'', idx().isalpha())
-			return Pattern(eat_n(1))
+
 		# derivative
-		elif idx(count=3) == 'd/d':
+		if idx(count=3) == 'd/d':
 			eat_n(3)
 			var = parse_var()
 			eat('(')
@@ -97,7 +100,7 @@ def parse(s: str) -> Expr:
 			eat(')')
 			return out
 		# variable
-		elif idx().isalpha():
+		elif idx() == '_' or idx().isalpha():
 			return parse_var()
 		# number
 		elif idx().isdigit() or idx() == '-':

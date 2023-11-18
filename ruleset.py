@@ -22,7 +22,13 @@ class RuleSet:
 
 		# distributive property
 		parse('(_x*_n)+(_x*_m) => _x*(_n+_m)'),
-		parse('(_x*_n)+_x      => _x*(_n+1)')
+		parse('(_x*_n)+_x      => _x*(_n+1)'),
+		parse('_x+_x           => _x*2'),
+
+		# derivative rules
+		parse('d/d_x(_x) => 1'),
+
+		parse('d/d_x(_n+_m) => d/d_x(_n)+d/d_x(_m)')
 	]
 
 	def apply(expr: Expr) -> Expr:
