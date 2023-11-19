@@ -48,8 +48,8 @@ class MatchData:
 					else:
 						# attempting to combine different exprs that aren't options
 						return None
-			else:
-				self.data = self.data | other.data
+
+			self.data = self.data | other.data
 			
 		elif type(other) is dict:
 			self.data = self.data | other
