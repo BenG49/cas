@@ -21,7 +21,7 @@ class RuleSet:
 		parse('_x^1 => _x'),
 		parse('_x^0 => 1'),
 
-		parse('_x-(_x+_y) => _y'), # TODO: find more elegant way to fix this
+		parse('_x-(_x+_y) => -1*_y'), # TODO: find more elegant way to fix this
 		parse('(_a/_b)/(_c/_d) => (_a*_d)/(_b*_c)'),
 
 		# distributive property

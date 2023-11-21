@@ -87,14 +87,14 @@ def simplify_rule_test():
 	test(parse('x-x-1'), 		parse('-1'))
 	test(parse('3+x/x'), 		parse('4'))
 	test(parse('3*x+2*x+1*x'), 	parse('6*x'))
-	test(parse('x-(x+2)'), 		parse('2'))
+	test(parse('x-(x+2)'), 		parse('-2'))
 	test(parse('x/2/(1/x)'),    parse('x^2/2'))
 
 def deriv_rules_test():
 	test(parse('d/dx(x+2)'), 	parse('1'))
 	test(parse('d/dx(3-x)'), 	parse('-1'))
 	test(parse('d/dx(y*x)'), 	parse('x*d/dx(y)+y'))
-	test(parse('d/dx((2+x)/x)'),parse('0'))
+	test(parse('d/dx((2+x)/x)'),parse('-2/x^2'))
 
 if __name__ == '__main__':
 	deriv_rules_test()
