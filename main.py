@@ -26,31 +26,32 @@ def canonicalization_test():
 	print(e, e == f)
 
 def rule_test():
-	test(parse('x+x+0'), parse('2*x'))
-	test(parse('(3*y^2)+0'), parse('3*y^2'))
-	test(parse('x+0+0'), parse('x'))
-	test(parse('1*(x+0)'), parse('x'))
-	test(parse('x^1*x^2'), parse('x^3'))
-	test(parse('x^2*2+x^2/2'), 	parse('x^2*2+x^2/2'))
+	test(parse('x+x+0'), 		parse('2x'))
+	test(parse('(3y^2)+0'), 	parse('3y^2'))
+	test(parse('x+0+0'), 		parse('x'))
+	test(parse('1(x+0)'), 		parse('x'))
+	test(parse('x^1*x^2'), 		parse('x^3'))
+	test(parse('2x^2+x^2/2'),	parse('2x^2+x^2/2'))
 	test(parse('x^2/x'), 		parse('x'))
-	test(parse('2*x^3*x'), 		parse('2*x^4'))
-	test(parse('(2*x*y)+(4*3*z*y)+(x*z*1*2)+x'), parse('((y*z*12)+(x*z*2)+(x*y*2)+x)'))
-	test(parse('(y*x)+(y*z)'), 	parse('y*(x+z)'))
+	test(parse('2x^3*x'), 		parse('2x^4'))
+	test(parse('(2xy)+4(3zy)+xz(1)(2)+x'), parse('(12yz)+(2xz)+(2xy)+x'))
+	test(parse('xy+yz'), 		parse('y(x+z)'))
 	test(parse('x-x-1'), 		parse('-1'))
 	test(parse('3+x/x'), 		parse('4'))
-	test(parse('3*x+2*x+1*x'), 	parse('6*x'))
+	test(parse('3x+2x+1x'), 	parse('6x'))
 	test(parse('x-(x+2)'), 		parse('-2'))
-	test(parse('x/2/(1/x)'),    parse('x^2/2'))
+	test(parse('x/2/(1/x)'),	parse('x^2/2'))
 
 def deriv_rules_test():
 	test(parse('d/dx(x+2)'), 	parse('1'))
 	test(parse('d/dx(3-x)'), 	parse('-1'))
-	test(parse('d/dx(y*x)'), 	parse('x*d/dx(y)+y'))
+	test(parse('d/dx(xy)'), 	parse('xd/dx(y)+y'))
 	test(parse('d/dx((2+x)/x)'),	parse('-2/x^2'))
-	test(parse('d/dx(6*x^3-9*x+4)'),parse('18*x^2-9'))
-	test(parse('d/dx(4*x^7-3*x^-7+9*x)'), parse('28*x^6--21*x^-8+9'))
-	test(parse('d/dx((x-4)*(2*x+x^2))'), parse('3*x^2-4*x-8')) # technically this is right
-	test(parse('d/dx(y^3+sin(y))'),	parse('3*y^2*d/dx(y)+cos(y)*d/dx(y)'))
+	test(parse('d/dx(6x^3-9x+4)'),parse('18x^2-9'))
+	test(parse('d/dx(4x^7-3x^-7+9x)'), parse('28x^6--21x^-8+9'))
+	test(parse('d/dx((x-4)(2x+x^2))'), parse('3x^2-4x-8')) # technically this is right
+	test(parse('d/dx(y^3+sin(y))'),	parse('3y^2d/dx(y)+cos(y)d/dx(y)'))
 
 if __name__ == '__main__':
+	rule_test()
 	deriv_rules_test()

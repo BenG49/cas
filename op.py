@@ -53,6 +53,9 @@ class Op(Enum):
 	def strings() -> list[str]:
 		return ['', '+', '-', '*', '/', '^', 'sin', 'cos', 'd/d']
 
+	def binop_strings():
+		return Op.strings()[1:6]
+
 	def func_strings() -> list[str]:
 		return Op.strings()[Op.SIN.value : Op.COS.value + 1]
 

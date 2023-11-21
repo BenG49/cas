@@ -120,10 +120,13 @@ def parse(s: str) -> Expr:
 	def parse_product() -> Expr:
 		expr = parse_factor()
 
-		while idx() in ['*', '/']:
-			op = eat_n(1)
-			expr = Expr(Op(Op.strings().index(op)), expr, parse_factor())
-		
+		while idx() in ['*', '/'] or (idx() and idx() not in Op.binop_strings() and idx() not in [')']):
+			if idx() in ['*', '/']:
+				op = eat_n(1)
+				expr = Expr(Op(Op.strings().index(op)), expr, parse_factor())
+			else:
+				expr = Expr(Op.MUL, expr, parse_factor())
+
 		return expr
 
 	def parse_statement() -> Expr:
@@ -138,4 +141,13 @@ def parse(s: str) -> Expr:
 	return parse_statement()
 
 if __name__ == '__main__':
-	print(parse('d/dx(1+x)'))
+	print(parse('2(2)'))
+	print(parse('x2'))
+	print(parse('sin(x)2'))
+	print(parse('2x'))
+	print(parse('xy'))
+	print(parse('sin(x)x'))
+	print(parse('2sin(x)'))
+	print(parse('xsin(x)'))
+	print(parse('sin(x)cos(x)'))
+	print(parse('xd/dx(x)'))
