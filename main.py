@@ -94,7 +94,8 @@ def deriv_rules_test():
 	test(parse('d/dx(x+2)'), 	parse('1'))
 	test(parse('d/dx(3-x)'), 	parse('-1'))
 	test(parse('d/dx(y*x)'), 	parse('x*d/dx(y)+y'))
-	test(parse('d/dx((2+x)/x)'),parse('-2/x^2'))
+	test(parse('d/dx((2+x)/x)'),		parse('-2/x^2'))
+	test(parse('d/dx(6*x^3-9*x+4)'),	parse('18*x^2-9'))
 
 if __name__ == '__main__':
 	deriv_rules_test()

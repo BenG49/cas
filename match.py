@@ -69,16 +69,7 @@ class MatchData:
 			return True
 	
 		# LEAF
-		elif expr.is_leaf():
-			return False
-		
-		# CHECK THROUGH CHILDREN
-		elif match.op != expr.op or len(match) > len(expr):
-			# NOTE: finds first match
-			for child in expr:
-				child_match_data = MatchData()
-				if child_match_data.populate_matches(child, match) and self.add(child_match_data):
-					return True
+		elif expr.is_leaf() or match.op != expr.op or len(match) > len(expr):
 			return False
 		
 		# MATCH ROOTS WITH NON-ASSOCIATIVE OPERATORS

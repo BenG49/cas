@@ -18,6 +18,12 @@ class Rule:
 
 		# no match
 		if not matches.populate_matches(copy, self.input):
+			# go through children
+			for i, child in copy.enumerate_child_nodes():
+				a = self.apply(child)
+				if child != a:
+					copy.children[i] = a
+
 			return copy
 
 		matches.collapse()

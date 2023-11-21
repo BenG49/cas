@@ -72,6 +72,19 @@ class Expr:
 		else:
 			return []
 	
+	# return "real" child nodes
+	def enumerate_child_nodes(self) -> bool:
+		if self.op in [Op.PLUS, Op.MINUS, Op.MUL, Op.DIV, Op.POW, Op.SIN, Op.COS]:
+			i = 0
+			for child in self.children:
+				yield i, child
+				i += 1
+		elif self.op == Op.DERIV:
+			yield 1, self.children[1]
+		# leaf
+		else:
+			yield from []
+	
 	### EVAL AND SIMPLIFICATION ###
 
 	def simplify(self):
