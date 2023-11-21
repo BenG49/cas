@@ -69,7 +69,7 @@ class MatchData:
 			return True
 	
 		# LEAF
-		elif expr.is_leaf() or match.is_leaf():
+		elif expr.is_leaf():
 			return False
 		
 		# CHECK THROUGH CHILDREN
