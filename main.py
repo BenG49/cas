@@ -7,6 +7,10 @@ def test(e, expected):
 	a = RuleSet.repeat_apply(e)
 	print(a == expected, e, '->', a)
 
+def test_rule(e, expected, rule):
+	a = rule.apply(e)
+	print(a == expected, e, '->', a)
+
 def equality_test():
 	a = parse('x+2')
 	b = parse('2+x')
@@ -75,35 +79,22 @@ def rule_test():
 	print(e, '->', RuleSet.repeat_apply(e))
 
 def simplify_rule_test():
-	e = parse('x^2*2+x^2/2')
-	test(e, parse('x^2*2+x^2/2'))
-
-	e = parse('x^2/x')
-	test(e, parse('x'))
-
-	e = parse('2*x^3*x')
-	test(e, parse('2*x^4'))
-
-	e = parse('(2*x*y)+(4*3*z*y)+(x*z*1*2)+x')
-	test(e, parse('((y*z*12)+(x*z*2)+(x*y*2)+x)'))
-
-	e = parse('(x*3)+(x*2)')
-	test(e, parse('x*5'))
-
-	e = parse('x-x-1')
-	test(e, parse('-1'))
-
-	e = parse('3+x/x')
-	test(e, parse('4'))
-
-	e = parse('3*x+2*x+1*x')
-	test(e, parse('6*x'))
+	test(parse('x^2*2+x^2/2'), 	parse('x^2*2+x^2/2'))
+	test(parse('x^2/x'), 		parse('x'))
+	test(parse('2*x^3*x'), 		parse('2*x^4'))
+	test(parse('(2*x*y)+(4*3*z*y)+(x*z*1*2)+x'), parse('((y*z*12)+(x*z*2)+(x*y*2)+x)'))
+	test(parse('(y*x)+(y*z)'), 	parse('y*(x+z)'))
+	test(parse('x-x-1'), 		parse('-1'))
+	test(parse('3+x/x'), 		parse('4'))
+	test(parse('3*x+2*x+1*x'), 	parse('6*x'))
+	test(parse('x-(x+2)'), 		parse('2'))
+	test(parse('x/2/(1/x)'),    parse('x^2/2'))
 
 def deriv_rules_test():
-	e = parse('d/dx(x+2)')
-	test(e, parse('1'))
+	test(parse('d/dx(x+2)'), 	parse('1'))
+	test(parse('d/dx(3-x)'), 	parse('-1'))
+	test(parse('d/dx(y*x)'), 	parse('x*d/dx(y)+y'))
+	test(parse('d/dx((2+x)/x)'),parse('0'))
 
 if __name__ == '__main__':
-	# deriv_rules_test()
-	rule = RuleSet.Rules[-1]
-	print(rule.apply(parse('d/dx(x+2)')))
+	deriv_rules_test()

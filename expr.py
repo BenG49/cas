@@ -54,7 +54,6 @@ class Expr:
 	def is_const(self) -> bool:
 		return self.is_leaf() and (isinstance(self[0], int) or isinstance(self[0], float))
 
-	# TODO: check if this works with derivatives
 	def is_constexpr(self) -> bool:
 		if self.is_var():
 			return False
@@ -78,10 +77,13 @@ class Expr:
 	def simplify(self):
 		# evauluate constant expression
 		if self.is_constexpr():
-			try:
-				return Expr.num(self())
-			except ZeroDivisionError:
-				return self
+			if self.op == Op.DERIV:
+				return Expr.num(0)
+			else:
+				try:
+					return Expr.num(self())
+				except ZeroDivisionError:
+					return self
 		# simplify constexprs and exprs separately
 		elif self.op.is_associative() and len(self) > 2:
 			constexprs = [e for e in self if e.is_constexpr()]
