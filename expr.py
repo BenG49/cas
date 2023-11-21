@@ -265,7 +265,7 @@ class Expr:
 				return f'({self.op} {" ".join(map(str, self))})'
 		else:
 			if self.op == Op.POW:
-				return f'({self[0]})^{self[1]}'
+				return f'{self[0]}^{self[1]}'
 			elif self.op.is_function():
 				return f'{self.op}({self[0]})'
 			elif self.op == Op.LEAF:

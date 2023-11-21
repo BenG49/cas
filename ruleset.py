@@ -30,16 +30,21 @@ class RuleSet:
 		parse('_x+_x           => _x*2'),
 
 		### DERIVATIVE RULES ###
+		
 		parse('d/d_x(_x) => 1'), # constant rule
 
 		parse('d/d_x(_n+_m) => d/d_x(_n)+d/d_x(_m)'), # sum rule
 		parse('d/d_x(_n-_m) => d/d_x(_n)-d/d_x(_m)'), # difference rule
 
-		parse('d/d_x(_m^_n) => _n*_x^(_n-1)*d/d_x(_m)'), # power rule
+		parse('d/d_x(_m^_n) => _n*_m^(_n-1)*d/d_x(_m)'), # power rule
 
 		parse('d/d_x(_m*_n) => d/d_x(_m)*_n+_m*d/d_x(_n)'), # product rule
 
 		parse('d/d_x(_m/_n) => (_n*d/d_x(_m)-_m*d/d_x(_n))/_n^2'), # quotient rule
+
+		# chain rule
+		parse('d/d_x(sin(_y)) =>    cos(_y)*d/d_x(_y)'),
+		parse('d/d_x(cos(_y)) => -1*cos(_y)*d/d_x(_y)'),
 	]
 
 	def apply(expr: Expr) -> Expr:

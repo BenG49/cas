@@ -1,1 +1,3 @@
-
+- reduce copies made in .apply()
+- add implicit multiply for parse('4x')
+- add match mode for negative constant to remove double negatives
