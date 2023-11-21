@@ -57,13 +57,21 @@ def parse(s: str) -> Expr:
 		return out
 	
 	def parse_var() -> Expr:
+		neg_const = idx() == '-'
+		if neg_const:
+			eat_n(1)
+
 		pattern = idx() == '_'
 		if pattern:
 			eat_n(1)
+		elif neg_const:
+			error('Cannot use unary \'-\' on variable')
 		
 		error(f'Expected variable, found \'{idx()}\'', idx().isalpha())
 		
-		if pattern:
+		if neg_const:
+			return Pattern.NegConst(eat_n(1))
+		elif pattern:
 			return Pattern(eat_n(1))
 		else:
 			return Expr(Op.LEAF, eat_n(1))
@@ -100,7 +108,7 @@ def parse(s: str) -> Expr:
 			eat(')')
 			return out
 		# variable
-		elif idx() == '_' or idx().isalpha():
+		elif idx() == '_' or idx().isalpha() or (idx() == '-' and (idx(1) == '_' or idx(1).isalpha())):
 			return parse_var()
 		# number
 		elif idx().isdigit() or idx() == '-':
@@ -151,3 +159,4 @@ if __name__ == '__main__':
 	print(parse('xsin(x)'))
 	print(parse('sin(x)cos(x)'))
 	print(parse('xd/dx(x)'))
+	print(parse('x--_y'))

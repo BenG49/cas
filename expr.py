@@ -131,9 +131,9 @@ class Expr:
 			if self.op.is_associative():
 				sort_self = sorted(self.children)
 				sort_other = sorted(other.children)
-				return all([sort_self[n] == sort_other[n] for n in range(len(self))])
+				return all(sort_self[n] == sort_other[n] for n in range(len(self)))
 
-			if all([self[n] == other[n] for n in range(len(self))]):
+			if all(self[n] == other[n] for n in range(len(self))):
 				return True
 		
 		return False
@@ -283,11 +283,15 @@ class Expr:
 class MatchType(Enum):
 	ANY = 0
 	CONST = 1
-	SAME_VAR = 2
+	NEG_CONST = 2
+	SAME_VAR = 3
 
 class Pattern(Expr):
 	def Const(id):
 		return Pattern(id, MatchType.CONST)
+	
+	def NegConst(id):
+		return Pattern(id, MatchType.NEG_CONST)
 	
 	def SameVar(id):
 		return Pattern(id, MatchType.SAME_VAR)
@@ -303,6 +307,9 @@ class Pattern(Expr):
 	def matches(self, other: Expr) -> bool:
 		if self.match_type == MatchType.ANY:
 			return True
+
+		elif self.match_type == MatchType.NEG_CONST:
+			return other.is_const() and other[0] < 0
 		
 		elif self.match_type == MatchType.CONST:
 			return other.is_constexpr()
@@ -328,4 +335,9 @@ class Pattern(Expr):
 		return isinstance(other, Pattern) and self.id < other.id
 
 	def __str__(self) -> str:
-		return f'_{self.id}'
+		if self.match_type == MatchType.CONST:
+			return f'_{self.id}{{C}}'
+		elif self.match_type == MatchType.NEG_CONST:
+			return f'_{self.id}{{-C}}'
+		else:
+			return f'_{self.id}'

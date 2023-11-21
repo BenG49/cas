@@ -26,6 +26,7 @@ def canonicalization_test():
 	print(e, e == f)
 
 def rule_test():
+	print('### Rule Tests ###')
 	test(parse('x+x+0'), 		parse('2x'))
 	test(parse('(3y^2)+0'), 	parse('3y^2'))
 	test(parse('x+0+0'), 		parse('x'))
@@ -41,8 +42,10 @@ def rule_test():
 	test(parse('3x+2x+1x'), 	parse('6x'))
 	test(parse('x-(x+2)'), 		parse('-2'))
 	test(parse('x/2/(1/x)'),	parse('x^2/2'))
+	test(parse('x--2'),			parse('x+2'))
 
 def deriv_rules_test():
+	print('### Derivative Tests ###')
 	test(parse('d/dx(x+2)'), 	parse('1'))
 	test(parse('d/dx(3-x)'), 	parse('-1'))
 	test(parse('d/dx(xy)'), 	parse('xd/dx(y)+y'))

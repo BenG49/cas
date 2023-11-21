@@ -47,16 +47,16 @@ class Match:
 class MatchData:
 	def make_pair(pattern: Pattern, expr: [Expr, tuple[Expr]]):
 		val = tuple(Match(e) for e in expr) if type(expr) is tuple else Match(expr)
-		return MatchData({str(pattern): val})
+		return MatchData({pattern.id: val})
 
 	def __init__(self, init: dict[str, Match]=dict()):
 		self.data = init
 
 	def __getitem__(self, key: [Pattern, str]) -> Expr:
-		return self.data[str(key) if isinstance(key, Pattern) else key]
+		return self.data[key.id if isinstance(key, Pattern) else key]
 	
 	def __setitem__(self, key: [Pattern, str], m: Match):
-		self.data[str(key) if isinstance(key, Pattern) else key] = m
+		self.data[key.id if isinstance(key, Pattern) else key] = m
 
 	# returns: successful match
 	def populate_matches(self, expr: Expr, match: Expr) -> bool:
