@@ -1,5 +1,6 @@
 from enum import Enum
 from op import Op
+from copy import deepcopy
 
 class Expr:
 	def num(n):
@@ -159,7 +160,7 @@ class Expr:
 	# in-place modification, also returns new tree in case of root modification
 	def replace(self, match, replacement):
 		if self == match:
-			return replacement
+			return replacement.deepcopy()
 		
 		# don't go through children
 		if self.is_leaf():
@@ -185,10 +186,28 @@ class Expr:
 		# check for matches in children
 		for i, child in enumerate(self):
 			if child == match:
-				self.children[i] = replacement
+				self.children[i] = replacement.deepcopy()
 			else:
 				self.children[i] = child.replace(match, replacement)
 
+		return self
+
+	# NOTE: assumes that tree only has unique Expr objects
+	def replace_by_id(self, target_id: int, replacement):
+		if id(self) == target_id:
+			return replacement.deepcopy()
+		
+		# don't go through children
+		if self.is_leaf():
+			return self
+		
+		for i, child in enumerate(self):
+			if id(child) == target_id:
+				self.children[i] = replacement.deepcopy()
+				return self
+			else:
+				self.children[i] = child.replace_by_id(target_id, replacement)
+		
 		return self
 
 	# split associative tree (>2 children) into multi-level tree
@@ -208,12 +227,21 @@ class Expr:
 		
 		self.children.append(child_tree)
 
+	def deepcopy(self):
+		return deepcopy(self)
+
 	### STRING REPRESENTATION ###
 
 	def __str__(self) -> str:
 		PREFIX_NOTATION = False
+		DEBUG = False
 
-		if PREFIX_NOTATION:
+		if DEBUG:
+			if self.op == Op.LEAF:
+				return f'EXPR[{hex(id(self))} {self[0]}]'
+			else:
+				return f'EXPR[{hex(id(self))} {str(self.op)} {self.children}]'
+		elif PREFIX_NOTATION:
 			if self.op == Op.LEAF:
 				return str(self[0])
 			elif self.op == Op.DERIV:
